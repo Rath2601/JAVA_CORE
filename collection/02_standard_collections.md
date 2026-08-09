@@ -62,14 +62,11 @@ arr[0] = 14; // array elements are mutable.
 ## **Set**
 
 1. Does not allow duplicates.
-2. Insertion order is not maintained.(generally)
-   * HashSet (doesn't guarantee insertion order or any order)
-   * TreeSet (sort based on natural sorting)
-   * LinkedHashSet (preserve insertion order)
-4. Can have one null value. (generally)
-5. Sets do not maintain an index-based structure.primary purpose of a Set is to maintain unique elements without duplicates, not to store elements in a particular order.
-6. Sets are designed for fast lookups (like contains()), additions, and removals **based on the value** itself **rather than its position**.
-7. it is implemented with **mathematical set** logic.Supports set operations like union (addAll), intersection (retainAll), and difference (removeAll).
+2. Set are internally map
+3. Can have one null value. (generally)
+4. Sets do not maintain an index-based structure.primary purpose of a Set is to maintain unique elements without duplicates, not to store elements in a particular order.
+5. Sets are designed for fast lookups (like contains()), additions, and removals **based on the value** itself **rather than its position**.
+6. it is implemented with **mathematical set** logic.Supports set operations like union (addAll), intersection (retainAll), and difference (removeAll).
 
 CLASSES -> **HashSet**, **LinkedHashSet**, **TreeSet**.
 
