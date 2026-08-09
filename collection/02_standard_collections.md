@@ -90,7 +90,6 @@ CLASSES -> **HashSet**, **LinkedHashSet**, **TreeSet**.
 | Attribute | PriorityQueue | ArrayDeque | LinkedList |
 | :--- | :--- | :--- | :--- |
 | **Primary Data Structure** | Resizable Array-based **Binary Min-Heap** | Resizable **Circular Array** | **Doubly Linked List** |
-| **Implemented Interfaces** | `Queue`, `Collection` | `Deque`, `Queue`, `Collection` | `Deque`, `Queue`, `List`, `Collection` |
 | **Ordering Behavior** | **Priority order** (Natural / `Comparator`) | **Insertion order** (FIFO / LIFO) | **Insertion order** (FIFO / LIFO / Index) |
 | **Null Elements?** | **Forbidden** (Throws `NPE`) | **Forbidden** (Throws `NPE`) | **Allowed** |
 | **Dynamic Resizing?** | **Yes** (Array re-allocation) | **Yes** (Array re-allocation) | **Yes** (Node allocation) |
