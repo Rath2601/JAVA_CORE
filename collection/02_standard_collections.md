@@ -61,12 +61,15 @@ arr[0] = 14; // array elements are mutable.
 
 ## **Set**
 
-1. Does not allow duplicates.
-2. Set are internally map
-3. Can have one null value. (generally)
-4. Sets do not maintain an index-based structure.primary purpose of a Set is to maintain unique elements without duplicates, not to store elements in a particular order.
-5. Sets are designed for fast lookups (like contains()), additions, and removals **based on the value** itself **rather than its position**.
+1. No duplicates — uniqueness by equals()/hashCode(), except sorted sets where it's compare() == 0.
+2. Set are internally map. except EnumSet (bit vector) and CopyOnWriteArraySet (COW list). HashSet→HashMap (dummy PRESENT value), LinkedHashSet→LinkedHashMap, TreeSet→TreeMap, ConcurrentSkipListSet→ConcurrentSkipListMap, newKeySet()→ConcurrentHashMap
+3. One null element in HashSet/LinkedHashSet; TreeSet rejects under natural ordering (null-tolerant Comparator permits); EnumSet, Set.of(), Set.copyOf(), newKeySet(), ConcurrentSkipListSet, CopyOnWriteArraySet reject null
+4. No index-based structure. Fast lookup/add/remove by value rather than position
+5. Ordering: none (HashSet) / insertion (LinkedHashSet, no access-order option) / sorted (TreeSet, ConcurrentSkipListSet) / enum declaration (EnumSet) / randomized per JVM run (Set.of())
 6. it is implemented with **mathematical set** logic.Supports set operations like union (addAll), intersection (retainAll), and difference (removeAll).
+7. Never use a mutable element or mutable collection as a Set element. changing contents changes its hashCode, corrupting the bucket index — contains() returns false while size() still counts it
+8. Iterator: fail-fast (HashSet, LinkedHashSet, TreeSet, EnumSet) / snapshot (CopyOnWriteArraySet) / weakly consistent (newKeySet(), ConcurrentSkipListSet). removeIf() is the correct conditional-delete idiom
+9. Immutable sets → value-based objects. Randomized iteration order across executions. Must never synchronize on them or rely on == identity because the JVM may reuse instances based on value
 
 CLASSES -> **HashSet**, **LinkedHashSet**, **TreeSet**.
 
