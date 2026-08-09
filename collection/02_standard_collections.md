@@ -22,6 +22,11 @@ arr[0] = 14; // array elements are mutable.
 2. Insertion order is maintained.
 3. Can have null values.
 4. Allows elements to be accessed/inserted/deleted by their position.
+5. Immutable lists (List.of, List.copyOf) don't allow null — but duplicates are allowed (unlike Set.of/Map.of)
+6. Immutable lists → value-based objects. Must never synchronize on them or rely on == identity because the JVM may reuse instances based on value. Iteration order is not randomized (unlike Set.of/Map.of) — order is the contract
+7. Lists created via List.of or List.copyOf are serializable if all elements are serializable
+8. Collections.unmodifiableList is a live read-only view whose backing list can still change; List.copyOf is a defensive copy. Both shallow — elements stay mutable
+9. Mutable elements are fine as list members (no hashing) — unlike Set/Map keys
 ---
 #### Difference between ArrayList and LinkedList
 | Feature                     | Array                                    | ArrayList                                 | LinkedList                                   |
@@ -87,6 +92,25 @@ CLASSES -> **HashSet**, **LinkedHashSet**, **TreeSet**.
 
 
 ## **QUEUE**
+1. FIFO by default; Deque is double-ended (both FIFO queue and LIFO stack). PriorityQueue orders by priority, not insertion
+2. Most queues reject null (ArrayDeque, PriorityQueue, all concurrent/blocking queues) — null is the sentinel meaning "empty". Only LinkedList-as-Queue allows it
+3. Two method families — throws vs. returns special value:
+Insert: add(e) throws / offer(e) returns false
+Remove: remove() throws / poll() returns null
+Examine: element() throws / peek() returns null
+4. BlockingQueue adds two more: put(e)/take() block, offer(e,t,u)/poll(t,u) time out
+5. Deque as stack: push/pop/peek = addFirst/removeFirst/peekFirst. Use ArrayDeque, not Stack
+6. ArrayDeque used as a stack iterates top-to-bottom; legacy Stack iterates bottom-to-top — a real migration bug
+7. No index-based access — no get(i). Search/remove(Object) is 𝑂(𝑁)
+8. PriorityQueue iteration is not sorted — only repeated poll() yields order; toString() prints raw heap-array order
+9. Bounded vs unbounded is the key production property. Unbounded = no backpressure = OOM under a slow consumer. Unbounded: ConcurrentLinkedQueue, PriorityBlockingQueue, DelayQueue, LinkedTransferQueue, LinkedBlockingQueue by default. Bounded: ArrayBlockingQueue (always), LinkedBlockingQueue/LinkedBlockingDeque (only if capacity passed)
+10. size() is 𝑂(𝑁) on ConcurrentLinkedQueue/Deque and LinkedTransferQueue — use isEmpty(). O(1) on ArrayBlockingQueue/LinkedBlockingQueue (AtomicInteger)
+11. SynchronousQueue holds nothing — capacity 0, size() always 0, isEmpty() always true, iteration always empty
+12. DelayQueue elements implement Delayed; poll() returns null while the head hasn't expired even though the queue is non-empty
+13. Iterator: fail-fast (ArrayDeque, PriorityQueue) / weakly consistent (all concurrent and blocking queues). No queue offers snapshot iteration
+14. Queue ordering is a contract of the implementation, not the interface — Queue itself guarantees nothing about order
+15. LinkedList implements both List and Deque, which invites misuse — use ArrayList or ArrayDeque instead
+
 | Attribute | PriorityQueue | ArrayDeque | LinkedList |
 | :--- | :--- | :--- | :--- |
 | **Primary Data Structure** | Resizable Array-based **Binary Min-Heap** | Resizable **Circular Array** | **Doubly Linked List** |
