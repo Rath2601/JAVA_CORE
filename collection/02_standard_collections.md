@@ -104,127 +104,18 @@ CLASSES -> **HashSet**, **LinkedHashSet**, **TreeSet**.
 
 ## **Map**
 ### **Overview**
-- A `Map` is a collection of objects that map **keys** to **values**.
 - **Key Characteristics**:
-  - **Key-Value Mapping**: Each key maps to exactly one value.
-  - **No Duplicate Keys**: Keys must be unique.
-  - **Replaces `Dictionary`**: `Map` takes the place of the older `Dictionary` abstract class.
-  - Allows a map's contents to be viewed as:
-    - A **Set** of keys.
-    - A **Collection** of values.
-    - A **Set** of key-value mappings.
----
-### **Order Behavior in Common Implementations**
-1. **HashMap**:
-   - Does not maintain order.
-   - Uses hashing for storage and retrieval.
-2. **TreeMap**:
-   - Maintains keys in **natural order**.
-   - Does not allow `null` keys (throws `NullPointerException`).
-3. **LinkedHashMap**:
-   - Maintains keys in **insertion order**.
----
-### **Hashing Considerations** -[This is common for all Hashing based collection classes]
-- All hashing-based map implementations should override:
-  - `hashCode` method.
-  - `equals` method.
+  - key-value pair. unique key with one null key (key like set)
+  - Replaces `Dictionary`
+  - map can't contain Itself as a Key/value: Syntax-wise it is valid Java. Architectural-wise, it violates the contract of Java Collections and leads to runtime crashes (StackOverflowError ex: from recursive hashCode()/equals())
+  - Never use ANY mutable key or mutable collection (List, Set, Map) as a Map Key: Changing the collection's contents changes its hashCode, corrupting the bucket index and making the key unretrievable.
+  - Hashtable, TreeMap, ConcurrentHashMap, ConcurrentSkipListMap, EnumMap, Map.of(), Map.copyOf() will not allow null key
+  - Lookup Optimization:hash(K) $\rightarrow$ Bucket Index $\rightarrow$ hash == node.hash $\rightarrow$ key == node.key $\rightarrow$ key.equals(node.key)
+  - null Key Handling:key == null $\rightarrow$ hash = 0 $\rightarrow$ directly routes to Bucket 0 (bypasses hashCode() and .equals()).
+  - Immutable map don't allow null keys/values; duplicate keys throw IllegalArgumentException at construction (unlike HashMap, which silently overwrites)
+  - Immutable maps -> value based objects. have randomized iteration orders across different executions. must never synchronize on them or rely on == identity because the JVM may reuse instances based on value
+  - Maps created via Map.of, Map.ofEntries, or Map.copyOf are serializable if all keys and values are serializable
     
-- **Mutable Objects as Keys**:
-  - Should be avoided as they can cause unexpected behavior.
-  - Example:
-    ```java
-    Map<StringBuilder, String> map = new HashMap<>();
-    StringBuilder key = new StringBuilder("example");
-    map.put(key, "value");
-    key.append("changed"); // Modifies the key's state
-    System.out.println(map.get(key)); // Might return null
-    ```
----
-### **Self-Referential Maps**
-- **A Map Cannot Contain Itself as a Key**:
-  - Causes `StackOverflowError`.
-- **A Map Can Contain Itself as a Value**:
-  - Allowed but must be used cautiously to avoid issues in:
-    - `clone()`
-    - `equals()`
-    - `hashCode()`
-    - `toString()`
----
-### **Unsupported Operations**
-- If a map does not allow modification:
-  - Destructive methods (`put`, `remove`, `clear`) throw `UnsupportedOperationException`.
-  - Optional behavior: Even if the operation has no effect (e.g., `putAll` on an empty map), the exception **may** still be thrown.
----
-### **Standard Constructors**
-1. **No-args Constructor**:
-   - Creates an empty map.
-   - Example:
-     ```java
-     Map<String, String> emptyMap = new HashMap<>();
-     ```
-2. **Copy Constructor**:
-   - Creates a new map by copying the key-value pairs from an existing map.
-   - Example:
-     ```java
-     Map<String, String> original = new HashMap<>();
-     original.put("A", "Apple");
-     Map<String, String> copy = new HashMap<>(original);
-     ```
----
-### **Behavior of Keys and Values**
-- **Restrictions**:
-  - Some map implementations (e.g., `Hashtable`) do not allow:
-    - `null` keys or values.
-    - Keys/values of incompatible types (`ClassCastException`).
-- **Behavior**:
-  - May throw exceptions like:
-    - `NullPointerException`
-    - `ClassCastException`
-  - Query methods (`containsKey`, `containsValue`) may:
-    - Return `false` for ineligible keys/values.
-    - Throw exceptions in some implementations.
----
-### **Relation to `equals` and `hashCode`**
-- Many methods in `Map` rely on `equals` and `hashCode`:
-  - Example: `containsKey` checks if a key exists.
-    - If `key == null`: Looks for a `null` key.
-    - Otherwise: Uses `key.equals(k)` to match.
-- **Optimizations**:
-  - Hashing implementations (e.g., `HashMap`) compare hash codes first before invoking `equals`.
----
-### **Unmodifiable Maps**
-- Created using:
-  - `Map.of`
-  - `Map.ofEntries`
-  - `Map.copyOf`
-- **Characteristics**:
-  - **Immutable**: Modifying operations (`put`, `remove`) throw `UnsupportedOperationException`.
-    ```
-    Map test = Map.of(1, "Rathna",2,"Sathya");
-    test.put(2, "Keerthi");
-    ```
-  - **Disallow `null` keys and values** (`NullPointerException`).
-    ```
-    Map test = Map.of(1, "Rathna",2,"Sathya", null,null); // NullPointerException
-    ```
-  - **Reject duplicate keys at creation** (`IllegalArgumentException`).
-    ```
-    Map test = Map.of(1, "Rathna",2,"Sathya", 2,"Rathna"); //IllegalArgumentException
-    ```
-  - **Iteration order is unspecified.**
-  - Value-based:
-    - Treat logically equal instances as interchangeable.(logically equal map, but distinct)
-    - Avoid using them for synchronization.
-      [**If synchronization is required, a synchronized or concurrent map is a better choice because they are explicitly designed for multi-threaded environments.**]
----
-### **Serialization**
-- Maps created via `Map.of`, `Map.ofEntries`, or `Map.copyOf` are **serializable** if all keys and values are serializable.
----
-### **Key Notes on Behavior**
-1. **Poor `hashCode` or `equals` Implementation**:
-   - Leads to inconsistent behavior (e.g., `containsKey` may fail).
-2. **Recursive Traversal in Self-Referential Maps**:
-   - Methods like `clone`, `equals`, `hashCode`, and `toString` may fail.
 ---
 | **Aspect**                | **HashMap**                                 | **TreeMap**                                | **LinkedHashMap**                           |
 |---------------------------|---------------------------------------------|--------------------------------------------|--------------------------------------------|
