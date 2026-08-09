@@ -104,17 +104,17 @@ CLASSES -> **HashSet**, **LinkedHashSet**, **TreeSet**.
 
 ## **Map**
 ### **Overview**
-- **Key Characteristics**:
-  - key-value pair. unique key with one null key (key like set)
-  - Replaces `Dictionary`
-  - map can't contain Itself as a Key/value: Syntax-wise it is valid Java. Architectural-wise, it violates the contract of Java Collections and leads to runtime crashes (StackOverflowError ex: from recursive hashCode()/equals())
-  - Never use ANY mutable key or mutable collection (List, Set, Map) as a Map Key: Changing the collection's contents changes its hashCode, corrupting the bucket index and making the key unretrievable.
-  - Hashtable, TreeMap, ConcurrentHashMap, ConcurrentSkipListMap, EnumMap, Map.of(), Map.copyOf() will not allow null key
-  - Lookup Optimization:hash(K) $\rightarrow$ Bucket Index $\rightarrow$ hash == node.hash $\rightarrow$ key == node.key $\rightarrow$ key.equals(node.key)
-  - null Key Handling:key == null $\rightarrow$ hash = 0 $\rightarrow$ directly routes to Bucket 0 (bypasses hashCode() and .equals()).
-  - Immutable map don't allow null keys/values; duplicate keys throw IllegalArgumentException at construction (unlike HashMap, which silently overwrites)
-  - Immutable maps -> value based objects. have randomized iteration orders across different executions. must never synchronize on them or rely on == identity because the JVM may reuse instances based on value
-  - Maps created via Map.of, Map.ofEntries, or Map.copyOf are serializable if all keys and values are serializable
+1. key-value pair. unique key with one null key (key like set)
+2. Replaces `Dictionary`
+3. keySet(), values(), entrySet() are live views, not copies — removal writes through, add unsupported, entry.setValue() mutates the map
+4. map can't contain Itself as a Key/value: Syntax-wise it is valid Java. Architectural-wise, it violates the contract of Java Collections and leads to runtime crashes (StackOverflowError ex: from recursive hashCode()/equals())
+5. Never use ANY mutable key or mutable collection (List, Set, Map) as a Map Key: Changing the collection's contents changes its hashCode, corrupting the bucket index and making the key unretrievable.
+6. Hashtable, TreeMap, ConcurrentHashMap, ConcurrentSkipListMap, EnumMap, Map.of(), Map.copyOf() will not allow null key
+7. Lookup Optimization:hash(K) $\rightarrow$ Bucket Index $\rightarrow$ hash == node.hash $\rightarrow$ key == node.key $\rightarrow$ key.equals(node.key)
+8. null Key Handling:key == null $\rightarrow$ hash = 0 $\rightarrow$ directly routes to Bucket 0 (bypasses hashCode() and .equals()).
+9. Immutable map don't allow null keys/values; duplicate keys throw IllegalArgumentException at construction (unlike HashMap, which silently overwrites)
+10. Immutable maps -> value based objects. have randomized iteration orders across different executions. must never synchronize on them or rely on == identity because the JVM may reuse instances based on value
+11. Maps created via Map.of, Map.ofEntries, or Map.copyOf are serializable if all keys and values are serializable
     
 ---
 | **Aspect**                | **HashMap**                                 | **TreeMap**                                | **LinkedHashMap**                           |
