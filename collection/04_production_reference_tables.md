@@ -104,8 +104,8 @@
 | `DEFAULT_INITIAL_CAPACITY` | 16 | Table size on first `put` (allocated lazily) |
 | `DEFAULT_LOAD_FACTOR` | 0.75 | Resize when `size > capacity × 0.75` — the empirical balance between collision rate and wasted space |
 | `MAXIMUM_CAPACITY` | $2^{30}$ | Hard ceiling |
-| `TREEIFY_THRESHOLD` | 8 | Bin length at which a chain converts to a red-black tree |
-| `UNTREEIFY_THRESHOLD` | 6 | Bin length at which a tree reverts to a chain (hysteresis prevents thrashing) |
+| `TREEIFY_THRESHOLD` | 8 | Bin(bucket) length at which a chain converts to a red-black tree |
+| `UNTREEIFY_THRESHOLD` | 6 | Bin(bucket) length at which a tree reverts to a chain (hysteresis prevents thrashing) |
 | `MIN_TREEIFY_CAPACITY` | 64 | Below this capacity, a long bin triggers a **resize instead of treeification** |
 
 **War story:** Java 7 `HashMap` used *head* insertion when transferring entries during resize, which under concurrent access could form a circular linked list and spin `get()` forever at 100% CPU. Java 8 switched to *tail* insertion, removing the infinite loop — but `HashMap` is still not thread-safe, and concurrent use still loses updates.
