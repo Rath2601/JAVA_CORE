@@ -100,7 +100,7 @@ CLASSES -> **HashSet**, **LinkedHashSet**, **TreeSet**.
 | **Memory Overhead** | **Low** (Array storage) | **Lowest** (Contiguous array, no node wrappers) | **Highest** (24–32 bytes node wrapper per element) |
 | **Cache Locality** | **Moderate** | **High** (Contiguous memory blocks) | **Abysmal** (Pointer chasing across heap) |
 | **Thread Safety** | **No** (Use `PriorityBlockingQueue`) | **No** (Use `ArrayBlockingQueue` / `CLQ`) | **No** (Use `LinkedBlockingQueue`) |
-| **Primary Production Use Case** | Priority scheduling, Top-$K$ algorithms | Default **Queue** & **Stack** replacement | *Avoid in high-perf code* (Legacy / rare iteration node removal) |
+| **Primary Production Use Case** | Priority scheduling, Top- $K$ algorithms | Default **Queue** & **Stack** replacement | *Avoid in high-perf code* (Legacy / rare iteration node removal) |
 
 
 ## **Map**
