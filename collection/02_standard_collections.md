@@ -28,29 +28,31 @@ arr[0] = 14; // array elements are mutable.
 8. Collections.unmodifiableList is a live read-only view whose backing list can still change; List.copyOf is a defensive copy. Both shallow — elements stay mutable
 9. Mutable elements are fine as list members (no hashing) — unlike Set/Map keys
 ---
-#### Difference between ArrayList and LinkedList
 | Feature                     | Array                                    | ArrayList                                 | LinkedList                                   |
 |-----------------------------|------------------------------------------|-------------------------------------------|----------------------------------------------|
 | **Data Structure**          | Fixed-size array                         | Resizable array                           | Doubly linked list                           |
 | **Size**                    | Fixed                                    | Dynamic                                   | Dynamic                                      |
 | **Access Time (get)**       | O(1) - Fast                              | O(1) - Fast                               | O(n) - Slower                                |
-| **Insertion (add)**         | N/A - Fixed size                         | O(1) - at end, O(n) - at index            | O(1) - Adding elements anywhere              |
-| **Deletion (remove)**       | N/A - Fixed size                         | O(n) - Due to shifting elements           | O(1) - Easy to remove from the middle        |
+| **Insertion (add)**         | N/A - Fixed size                         | Amortized O(1) - at end, O(n) - at index (shifting) | O(1) - at head/tail only, O(n) - at index (must traverse to the position first) |
+| **Deletion (remove)**       | N/A - Fixed size                         | O(1) - at end, O(n) - at index (shifting) | O(1) - at head/tail, or via an existing `ListIterator`; O(n) - at index (traversal) |
 | **Memory Usage**            | Least memory per element                 | Less memory per element                   | More memory per element (due to pointers)    |
 | **Traversal**               | Fast with index access                   | Faster with index access (random access)  | Slower for large lists (sequential access)   |
-| **Best Suited For**         | Fixed number of elements, fast access    | Frequent access to elements by index      | Frequent insertions/deletions at any position|
-| **Resize Capability**       | Not resizable                            | Automatically resizes. default capacity(10)                   | Automatically resizes                        |
+| **Best Suited For**         | Fixed number of elements, fast access    | Frequent access to elements by index      | Frequent insertions/deletions at the **ends** (deque-style) |
+| **Resize Capability**       | Not resizable                            | Automatically resizes. default capacity(10), allocated lazily on first add | Automatically resizes                        |
 | **Implements**              | N/A                                      | List, RandomAccess, Cloneable, Serializable | List, Deque, Cloneable, Serializable       |
-| **Use Case**                | Static data where size is known          | Good for read-heavy operations            | Good for write-heavy operations              |
+| **Use Case**                | Static data where size is known          | Good for read-heavy operations            | Effectively none in modern code — `ArrayDeque` beats it as a Deque, `ArrayList` beats it as a List |
 
 ---
+
 | Feature                                | ArrayList                                              | Vector                                                |
 |----------------------------------------|--------------------------------------------------------|-------------------------------------------------------|
-| **Synchronization**                    | ArrayList is not synchronized.                         | Vector is synchronized.                               |
-| **Growth Strategy**                    | ArrayList increments 50% of current array size if the number of elements exceeds its capacity. | Vector increments 100%, meaning it doubles the array size if the total number of elements exceeds its capacity. |
+| **Synchronization**                    | ArrayList is not synchronized.                         | Vector is synchronized (method-level).                |
+| **Growth Strategy**                    | ArrayList increments 50% of current array size if the number of elements exceeds its capacity. | Vector increments 100%, meaning it doubles the array size if the total number of elements exceeds its capacity. (Unless an explicit `capacityIncrement` is passed to the constructor, in which case it grows by that fixed amount.) |
 | **Legacy Status**                      | ArrayList is not a legacy class. It was introduced in JDK 1.2. | Vector is a legacy class.                             |
 | **Performance**                        | ArrayList is fast because it is non-synchronized.       | Vector is slow because it is synchronized. In a multithreading environment, it holds other threads in a runnable or non-runnable state until the current thread releases the lock of the object. |
-| **Traversal**                          | ArrayList uses the `Iterator` interface to traverse the elements. Iterator check concurrent state changes and fails if there is any | Vector can use the `Iterator` interface or `Enumeration` interface to traverse the elements. Enumeration completely ignores concurrent state changes |
+| **Traversal**                          | ArrayList uses the `Iterator` interface to traverse the elements. Iterator check concurrent state changes and fails if there is any | Vector can use the `Iterator` interface or `Enumeration` interface to traverse the elements. Its `Iterator` is fail-fast; `Enumeration` completely ignores concurrent state changes |
+| **Real Problem with Vector**           | —                                                      | Per-method locking does **not** make compound operations atomic (`if (!v.contains(x)) v.add(x)` is still racy), and iteration still needs an external `synchronized` block. Use `ArrayList` + explicit sync, or `CopyOnWriteArrayList`. |
+
 ---
 ### **STACK** :
 1. class represents a last-in-first-out (LIFO) stack of objects.
@@ -81,14 +83,14 @@ CLASSES -> **HashSet**, **LinkedHashSet**, **TreeSet**.
 | Feature | `HashSet` | `LinkedHashSet` | `TreeSet` |
 | :--- | :--- | :--- | :--- |
 | **Order of Elements** | No guaranteed order | Maintains insertion order | Sorted order (Natural or `Comparator`) |
-| **Null Elements** | **1 `null` allowed** | **1 `null` allowed** | **No `null` allowed** (`NullPointerException`) |
+| **Null Elements** | **1 `null` allowed** | **1 `null` allowed** | **No `null` under natural ordering** (`NullPointerException`); permitted only if a null-tolerant `Comparator` is supplied |
 | **Underlying Data Structure** | `HashMap` (Hash Table) | `LinkedHashMap` (Hash Table + Doubly-Linked List) | `TreeMap` (Red-Black Tree) |
-| **Time Complexity** | $O(1)$ for `add`, `remove`, `contains`  $O(\log n)$ (Java 8+ treeification under high collisions) | $O(1)$ for `add`, `remove`, `contains` $O(\log n)$ (Java 8+ treeification under high collisions) | $O(\log n)$ for `add`, `remove`, `contains` |
-| **Element Comparison Mechanism** | `hashCode()` and `equals()` | `hashCode()` and `equals()` | `compareTo()` (`Comparable`) or `compare()` (`Comparator`) |
-| **Specialized Methods** | Standard Set operations | Access-order capabilities via underlying `LinkedHashMap` | Navigable operations (`first()`, `last()`, `higher()`, `lower()`, `subSet()`) |
+| **Time Complexity** | Average $O(1)$ for `add`, `remove`, `contains`; worst $O(\log n)$ (Java 8+ treeification: ≥8 in a bin **and** ≥64 capacity, and only if elements are `Comparable`) | Average $O(1)$ for `add`, `remove`, `contains`; worst $O(\log n)$ (same treeification rules) | $O(\log n)$ for `add`, `remove`, `contains` |
+| **Element Comparison Mechanism** | `hashCode()` and `equals()` | `hashCode()` and `equals()` | `compareTo()` (`Comparable`) or `compare()` (`Comparator`) — **uniqueness is `compare() == 0`, not `equals()`** |
+| **Specialized Methods** | Standard Set operations | Standard Set operations — **insertion order only; there is no access-order constructor** (that exists on `LinkedHashMap`, not here) | Navigable operations (`first()`, `last()`, `higher()`, `lower()`, `subSet()`) |
 | **Memory Overhead** | Low (Stores entries + hash buckets) | Medium (Extra pointers for doubly-linked list) | High (Tree node pointers: parent, left, right, color) |
 | **Duplicates** | Does not allow | Does not allow | Does not allow |
-| **Primary Use Case** | Fast lookups when order doesn't matter | Fast lookups preserving insertion/access sequence | Sorted datasets or range-based queries |
+| **Primary Use Case** | Fast lookups when order doesn't matter | Fast lookups preserving insertion order (deterministic output, reproducible tests) | Sorted datasets or range-based queries |
 
 
 ## **QUEUE**
@@ -114,10 +116,10 @@ Examine: element() throws / peek() returns null
 | Attribute | PriorityQueue | ArrayDeque | LinkedList |
 | :--- | :--- | :--- | :--- |
 | **Primary Data Structure** | Resizable Array-based **Binary Min-Heap** | Resizable **Circular Array** | **Doubly Linked List** |
-| **Ordering Behavior** | **Priority order** (Natural / `Comparator`) | **Insertion order** (FIFO / LIFO) | **Insertion order** (FIFO / LIFO / Index) |
+| **Ordering Behavior** | **Priority order** (Natural / `Comparator`) — only `poll()` yields it; **iteration and `toString()` are NOT sorted** (raw heap-array order) | **Insertion order** (FIFO / LIFO) | **Insertion order** (FIFO / LIFO / Index) |
 | **Null Elements?** | **Forbidden** (Throws `NPE`) | **Forbidden** (Throws `NPE`) | **Allowed** |
-| **Dynamic Resizing?** | **Yes** (Array re-allocation) | **Yes** (Array re-allocation) | **Yes** (Node allocation) |
-| **Enqueue / Dequeue Complexity** | $O(\log n)$ | **Amortized $O(1)$** | **$O(1)$** |
+| **Dynamic Resizing?** | **Yes** (Array re-allocation, default capacity 11) | **Yes** (Array re-allocation, default capacity 16) | **Yes** (Node allocation) |
+| **Enqueue / Dequeue Complexity** | $O(\log n)$ (bulk construction from a `Collection` is $O(n)$ via heapify) | **Amortized $O(1)$** | **$O(1)$ at head/tail** |
 | **Search / Contains Complexity** | $O(n)$ | $O(n)$ | $O(n)$ |
 | **Random Access ($O(1)$ Index)** | **No** | **No** | **No** ($O(n)$ via sequential traversal) |
 | **Memory Overhead** | **Low** (Array storage) | **Lowest** (Contiguous array, no node wrappers) | **Highest** (24–32 bytes node wrapper per element) |
@@ -143,13 +145,13 @@ Examine: element() throws / peek() returns null
 ---
 | **Aspect**                | **HashMap**                                 | **TreeMap**                                | **LinkedHashMap**                           |
 |---------------------------|---------------------------------------------|--------------------------------------------|--------------------------------------------|
-| **Ordering**               | No ordering (unordered)                    | Ordered according to **natural order** of keys or a custom comparator | Maintains insertion order of elements |
-| **Null Keys/Values**       | Allows one `null` key and multiple `null` values | Does not allow `null` keys (throws `NullPointerException`), but allows `null` values | Allows one `null` key and multiple `null` values |
-| **Performance (Time Complexity)** | O(1) for basic operations (put, get)    | O(log n) for most operations (put, get, remove) | O(1) for basic operations (put, get)       |
-| **Order of Iteration**     | Unspecified                                 | Sorted order (ascending order of keys)     | Iteration order is the same as insertion order |
-| **Comparator**             | Does not require a comparator for ordering | Requires a comparator for custom ordering or uses natural order | No comparator, but maintains insertion order |
-| **Thread Safety**          | Not thread-safe (use `Collections.synchronizedMap()` for synchronization) | Not thread-safe (use `Collections.synchronizedMap()` for synchronization) | Not thread-safe (use `Collections.synchronizedMap()` for synchronization) |
-| **Usage**                  | Ideal for general-purpose maps that don't require ordering | Ideal for maps where sorting or range queries are needed | Ideal when insertion order needs to be preserved |
+| **Ordering**               | No ordering (unordered)                    | Ordered according to **natural order** of keys or a custom comparator | Maintains insertion order; **access order** with the 3-arg constructor `(capacity, loadFactor, true)` → LRU |
+| **Null Keys/Values**       | Allows one `null` key and multiple `null` values | Does not allow `null` keys under natural ordering (throws `NullPointerException`; a null-tolerant `Comparator` permits it), but allows `null` values | Allows one `null` key and multiple `null` values |
+| **Performance (Time Complexity)** | Average O(1) for basic operations (put, get); worst O(log n) after treeification | O(log n) for most operations (put, get, remove) | Average O(1) for basic operations (put, get)       |
+| **Order of Iteration**     | Unspecified, and changes on resize          | Sorted order (ascending order of keys)     | Iteration order is the same as insertion (or access) order |
+| **Comparator**             | Does not require a comparator for ordering | Requires a comparator for custom ordering or uses natural order — **key uniqueness is `compare() == 0`, not `equals()`** | No comparator, but maintains insertion order |
+| **Thread Safety**          | Not thread-safe (use `ConcurrentHashMap`; `Collections.synchronizedMap()` only for legacy interop) | Not thread-safe (use `ConcurrentSkipListMap`) | Not thread-safe (**no concurrent equivalent** — `Collections.synchronizedMap()` is the only option) |
+| **Usage**                  | Ideal for general-purpose maps that don't require ordering | Ideal for maps where sorting or range queries are needed | Ideal when insertion order needs to be preserved, or for an LRU cache |
 | **Space Overhead**         | Less overhead                               | Higher overhead due to tree structure      | Higher overhead due to maintaining insertion order |
-| **Iterator**               | Allows `null` key, but iterators are not ordered | Sorted iterators based on key order        | Iterators maintain the insertion order of elements |
+| **Iteration Cost**         | Fail-fast; **O(capacity + n)** — a map that grew to 1M then shrank still walks a huge sparse table | Fail-fast; O(n), sorted by key            | Fail-fast; **O(n) independent of capacity** (walks the link chain) |
 | **KeySet**                  | Unordered key set                          | Sorted key set                             | Key set is in insertion order              |
