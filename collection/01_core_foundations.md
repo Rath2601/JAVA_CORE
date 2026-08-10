@@ -6,7 +6,7 @@
 NOTE:
 * **State Separation**:Each iterator() call returns a fresh cursor, nested loops don't corrupt each other. (**Fail-fast**) java throw CME, or may silently skip elements if we mutate element while iterating either in single / multithreaded environment
 * **Single-Use Lifecycle**: Once exhausted (hasNext() -> false), an Iterator cannot be reset. (ListIterator- > bidirectional, still can't reset)
-* **Safe Mutation**: iterator.remove() avoids ConcurrentModificationException. The collection counts structural changes (add/remove/resize, not set()) in modCount; the iterator snapshots it as expectedModCount at creation, so mutating via the collection desyncs the two. remove() is optional (UOE on immutable collections) and valid only once per next()
+* **Safe Mutation**: iterator.remove() avoids ConcurrentModificationException. The collection counts structural changes (add/remove/resize, not set()) in **modCount**; the iterator snapshots it as **expectedModCount** at creation, so mutating via the collection desyncs the two. remove() is optional (UOE on immutable collections) and valid only once per next()
 * For Map (doesn't implement Iterable): use a view — entrySet(), keySet(), values() — or map.forEach(). each view is a collection which follows iterator rule
 
 ---
