@@ -61,9 +61,7 @@ The hashCode() and equals() methods from the Object class are required by collec
 | **Core Concept & JDK Term** | Throws `ConcurrentModificationException` on mid-iteration edits. ("Best-effort" bug detector). | Iterates over a snapshot or weak view without exceptions. (Weakly consistent / COW). |
 | **Mechanism & Exception Triggers** | Tracks structural changes via `modCount` vs `expectedModCount` checked on each `next()`. Only structural changes (`add`/`remove`) trigger it. set() doesn't | No comodification check; operates independently on a snapshot or concurrent view. No exception triggers. |
 | **Collections & In-Loop Removal** | ArrayList, LinkedList, HashMap, HashSet, TreeMap, TreeSet, LinkedHashMap, LinkedHashSet, ArrayDeque, and PriorityQueue. <br>•Safe: Iterator.remove(), removeIf(), ListIterator.add()/set() | CopyOnWriteArrayList/Set, ConcurrentHashMap, ConcurrentLinkedQueue. <br>•COW iterator throws UnsupportedOperationException on remove(); CHM iterator supports it. |
-| **Data Freshness & Thread Safety** | Live data until it throws ("consistent or fails"). <br>• **Not thread-safe** (CME can fire even single-threaded). | COW: true immutable snapshot; never sees writes made after iterator creation.
-CHM: weakly consistent — may or may not see concurrent writes, but returns each surviving element exactly once.
-• Thread-safe. |
+| **Data Freshness & Thread Safety** | Live data until it throws ("consistent or fails"). <br>• **Not thread-safe** (CME can fire even single-threaded). | COW: true immutable snapshot; never sees writes made after iterator creation. CHM: weakly consistent — may or may not see concurrent writes, but returns each surviving element exactly once. <br>• Thread-safe. |
 | **Performance, Memory & Risks** | Minimal overhead, no copying. <br>• *Risk:* Surprise CME crashes, infinite loops if shared raw. | COW: full $O(n)$ copy per write ($\rightarrow$ GC pressure). <br>• *Risk:* Memory blowup, stale reads, `size()` is an estimate. |
 | **Best Fit / Use Case** | Single-threaded collections or external sync; used as an early bug signal. | Read-mostly shared lists (COW) or hot concurrent caches (`ConcurrentHashMap`). |
 
