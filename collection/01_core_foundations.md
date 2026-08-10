@@ -39,7 +39,7 @@ The hashCode() and equals() methods from the Object class are required by collec
 
 3. Custom Class Rules
 * The exact same principles above apply to custom classes when stored in these collections.
-* Reference Check Shortcut: When overriding equals() to implement value equality, the very first step should always be a reference check (this == obj). If references match, it instantly returns true, skipping expensive field-by-field comparisons
+* when overriding equals() first to check (this == obj). If references match, it instantly returns true, skipping expensive field-by-field comparisons
 
 ---
 ### **Comparable & Comparator**
