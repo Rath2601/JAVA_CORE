@@ -50,7 +50,7 @@ The hashCode() and equals() methods from the Object class are required by collec
 4. `Collections.sort()` / `List.sort()` — work on `List` & uses TimSort (O(n log n)).
 5. `Arrays.sort()` — works on arrays; TimSort for reference-object arrays (`Integer[]`), Dual-Pivot Quicksort for primitive arrays (`int[]`).
 6. `TreeSet` / `TreeMap` need `Comparable` or a `Comparator`, else `ClassCastException` at runtime; they order + de-dupe by comparison, ignoring `equals()` / `hashCode()`.
-7. Keep `(a.compareTo(b) == 0) == a.equals(b)` true, or `TreeSet` discards distinct items as duplicates and breaks the `Set` contract.
+7. Keep `(a.compareTo(b) == 0) == a.equals(b)` true, or `TreeSet` discards distinct items as duplicates and breaks the `Set` contract.This is a contract recommendation, not enforced — violations fail silently.
 
 
 ---
