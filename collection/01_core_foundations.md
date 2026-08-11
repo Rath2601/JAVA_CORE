@@ -66,31 +66,32 @@ The hashCode() and equals() methods from the Object class are required by collec
 6. If domain class used across both sorted (compareTo/compare) and hash/equality-based collections (equals/hashCode), ensure (a.compareTo(b) == 0) must equal a.equals(b)
 
 ---
+### Collection types overview:
+* **Synchronized Collection** (Legacy — avoid in modern multithreaded environments)
+  * **Behavior**: Modifying either the wrapper or the original collection reflects in both, as the wrapper delegates method calls to the underlying list under a single global lock.
+  * **Creation Methods**: Collections.synchronizedList(), Collections.synchronizedSet(), Collections.synchronizedMap()
+  * **Key Trade-off**: Thread safety is easily broken if the raw reference is modified directly or iterated over without external locking.
 
-### Unmodifiable Collection
-**Description:** Read-only view of collection. Changes to original collection will be reflected here, while mutation throws `UnsupportedOperationException`. Null elements allowed. Not thread-safe (reflects original's concurrent modifications).
+* **Unmodifiable Collection** (Read-only view of collection)
+  * **Behavior**: The unmodifiable wrapper cannot be edited directly (throws UnsupportedOperationException). However, if the underlying original collection is modified, those changes reflect in the unmodifiable view. Null allowed
+  * **Creation Methods**:
+    * `Collections.unmodifiableList()` / `..Set()` / `..Map()` — **Java 1.2**
+    * `Collectors.toUnmodifiableList()` / `..Set()` / `..Map()` — **Java 10** *(used in Streams)*
+  * **Key Trade-off**: Provides a read-only view interface, but does not guarantee true immutability if the underlying collection remains accessible.
+  * **Use case** :
+    1. Wrap third party / older code returning mutable list before passing to downstream
+    2. Only owning class adds/removes items; other classes can't
 
-#### Use Case
-* Wrap third party / older code returning mutable list before passing to downstream
-* Only owning class adds/removes items; other classes can't
-
-#### Java Classes
-* `Collections.unmodifiableList()` / `..Set()` / `..Map()` — **Java 1.2**
-* `Collectors.toUnmodifiableList()` / `..Set()` / `..Map()` — **Java 10** *(used in Streams)*
-
----
-
-### Immutable Collection
-**Description:** Independent collection. Mutation throws `UnsupportedOperationException`. Null elements not allowed. Thread safe *(if contained elements are immutable)*.
-
-#### Use Case
-* `@Cacheable` returns fixed snapshot; no caller can corrupt it
-* Bootstrap servers, group IDs set once at startup and never mutated again
-
-#### Java Classes
-* `List.of()` / `Set.of()` / `Map.of()` — **Java 9**
-* `List.copyOf()` / `Set.copyOf()` / `Map.copyOf()` — **Java 10**
-* `Stream.toList()` — **Java 16** *(only list; unmodifiable, allows nulls from stream)*
+* **Immutable Collection**
+  * **Behavior**: Completely read-only and independent. Once created, no modifications are allowed on the collection, and changes to any source data have zero relation or effect after creation. Null not allowed (Thread safe *(if contained elements are immutable)*)
+  * **Creation Methods**:
+    * `List.of()` / `Set.of()` / `Map.of()` — **Java 9**
+    * `List.copyOf()` / `Set.copyOf()` / `Map.copyOf()` — **Java 10**
+    * `Stream.toList()` — **Java 16** *(only list; unmodifiable, allows nulls from stream)*
+  * **Key Trade-off**: Inherently thread-safe with zero locking overhead, but strictly forbids null elements.
+  * **Use case** :
+    1. `@Cacheable` returns fixed snapshot; no caller can corrupt it
+    2. Bootstrap servers, group IDs set once at startup and never mutated again
 
 ---
 #### 1. Structurally Immutable vs. Truly Immutable
