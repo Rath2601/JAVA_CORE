@@ -47,10 +47,9 @@ The hashCode() and equals() methods from the Object class are required by collec
 1. `Comparable` → implemented on the class itself (natural order). `Comparator` → external (separate class / lambda / method reference) for alternative ordering as per logic, as many as we want. (decoupled from the source class)
 2. Methods: `Comparable` → `compareTo(T o)` (1 arg: `this` vs `o`). `Comparator` → `compare(T o1, T o2)` (2 args).
 3. `Comparator` precedes over `Comparable`. (overrides natural ordering only when explicitly supplied in constructor or sort methods)
-4. `Collections.sort()` / `List.sort()` — work on `List` & uses TimSort (O(n log n)).
-5. `Arrays.sort()` — works on arrays; TimSort for reference-object arrays (`Integer[]`), Dual-Pivot Quicksort for primitive arrays (`int[]`).
-6. `TreeSet` / `TreeMap` need `Comparable` or a `Comparator`, else `ClassCastException` at runtime; they order + de-dupe by comparison, ignoring `equals()` / `hashCode()`.
-7. Keep `(a.compareTo(b) == 0) == a.equals(b)` true, or `TreeSet` discards distinct items as duplicates and breaks the `Set` contract.This is a contract recommendation, not enforced — violations fail silently.
+4. `Collections.sort()` / `List.sort()` uses TimSort (O(n log n)).`Arrays.sort()` — works on arrays; TimSort for reference-object arrays (`Integer[]`), Dual-Pivot Quicksort for primitive arrays (`int[]`).
+5. `TreeSet` / `TreeMap` need `Comparable` or a `Comparator`, else `ClassCastException` at runtime; they order + de-dupe by comparison, ignoring `equals()` / `hashCode()`.
+6. If domain class used across both sorted (compareTo/compare) and hash/equality-based collections (equals/hashCode), ensure (a.compareTo(b) == 0) must equal a.equals(b)
 
 
 ---
