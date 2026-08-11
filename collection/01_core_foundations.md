@@ -55,14 +55,14 @@ The hashCode() and equals() methods from the Object class are required by collec
 ---
 ### **Fail-Fast vs. Fail-Safe Mechanism**
 
-| Aspect | Fail-Fast | Fail-Safe / Weakly Consistent |
-| :--- | :--- | :--- |
-| **Core Concept & JDK Term** | Throws `ConcurrentModificationException` on mid-iteration edits. ("Best-effort" bug detector). | Iterates over a snapshot or weak view without exceptions. (Weakly consistent / COW). |
-| **Mechanism & Exception Triggers** | Tracks structural changes via `modCount` vs `expectedModCount` checked on each `next()`. Only structural changes (`add`/`remove`) trigger it. | No comodification check; operates independently on a snapshot or concurrent view. No exception triggers. |
-| **Collections & In-Loop Removal** | `ArrayList`, `HashMap`, `HashSet`, `TreeSet`, `Vector`. <br>• `Iterator.remove()` is **supported** (the only safe in-loop removal). | `CopyOnWriteArrayList`/`Set`, `ConcurrentHashMap`, `ConcurrentLinkedQueue`. <br>• COW throws `UnsupportedOperationException` for in-loop removal. |
-| **Data Freshness & Thread Safety** | Live data until it throws ("consistent or fails"). <br>• **Not thread-safe** (CME can fire even single-threaded). | May be stale (COW misses post-creation writes; concurrent views may reflect them). <br>• **Thread-safe** for concurrency. |
-| **Performance, Memory & Risks** | Minimal overhead, no copying. <br>• *Risk:* Surprise CME crashes, infinite loops if shared raw. | COW: full $O(n)$ copy per write ($\rightarrow$ GC pressure). <br>• *Risk:* Memory blowup, stale reads, `size()` is an estimate. |
-| **Best Fit / Use Case** | Single-threaded collections or external sync; used as an early bug signal. | Read-mostly shared lists (COW) or hot concurrent caches (`ConcurrentHashMap`). |
+| Aspect | Fail-Fast | Non-Fail-Fast (Snapshot / Weakly Consistent) |
+|---|---|---|
+| **Collections** | `ArrayList`, `LinkedList`, `HashMap`, `HashSet`, `TreeMap`, `TreeSet`, `Vector`, all `Collections.synchronizedXxx` wrappers | **Snapshot (COW):** `CopyOnWriteArrayList`, `CopyOnWriteArraySet`<br>**Weakly consistent:** `ConcurrentHashMap` (+ views), `ConcurrentLinkedQueue/Deque`, `ConcurrentSkipListMap/Set`, `LinkedBlockingQueue`, `ArrayBlockingQueue` |
+| **In-loop removal** | `Iterator.remove()`, `removeIf()`, `ListIterator.add()/set()` — each resyncs `expectedModCount` or bypasses iteration | **COW:** `remove()`/`set()`/`add()` throw `UnsupportedOperationException` (iterator holds the old, now-immutable array); use `list.remove(x)` or `removeIf()`<br>**Weakly consistent:** `remove()` supported — iterator walks the live structure and deletes from the actual collection |
+| **Data freshness** | Live until it throws — "consistent or fails" | **COW:** immutable snapshot at `iterator()` time; post-creation writes invisible for the whole loop. Guaranteed stale, never inconsistent<br>**Weakly consistent:** every element present at creation and not since removed is returned **exactly once**, even across resize. Concurrent inserts *may or may not* appear — undefined, never branch on it |
+| **Thread safety** | Not thread-safe. CME is a mutation detector, not a concurrency guard. Concurrent reads safe only if nobody writes | Thread-safe.<br>**COW:** writes swap the array atomically under a lock; readers hold their own reference, lock-free<br>**Weakly consistent:** per-bin locking on write, no lock on read |
+| **Performance & memory** | Minimal — one int comparison per `next()`, no copying, no locks | **COW:** reads lock-free O(1); every write copies the whole array → O(n) per mutation, O(n²) for n adds; two arrays live during copy<br>**CHM:** near-`HashMap` read speed; writes contend only on the affected bin |
+| **Risks** | Surprise CME in production; silent element skips when the loop exits early | **COW:** GC pressure, memory spikes on large lists, stale reads — read-heavy workloads only<br>**CHM:** `size()`/`isEmpty()`/`containsValue()` are approximations, never use in correctness checks; `get`-then-`put` isn't atomic — use `computeIfAbsent`/`merge`/`putIfAbsent` |
 
 ---
 
